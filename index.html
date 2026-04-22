@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>통합관리솔루션 — 수강후기 관리</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
+<link rel="stylesheet" href="tokens.css" />
+<style>
+  html, body, #root { height: 100%; }
+  body { overflow: hidden; }
+  .app-frame {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-default);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+    display: flex;
+    width: 100%; height: 100%;
+  }
+  .frame-wrap {
+    width: 100%; height: 100%;
+    display: flex; flex-direction: column;
+    background: var(--bg-surface);
+  }
+  /* 탑바 (맥 윈도우 느낌) */
+  .frame-topbar {
+    height: 32px; background: var(--gray-75);
+    border-bottom: 1px solid var(--border-subtle);
+    display: flex; align-items: center; padding: 0 12px; gap: 8px;
+    flex-shrink: 0;
+  }
+  .frame-dots { display: flex; gap: 6px; }
+  .frame-dot { width: 10px; height: 10px; border-radius: 5px; }
+  .frame-url {
+    flex: 1; text-align: center; font-size: 11.5px;
+    color: var(--text-tertiary); font-family: var(--font-mono);
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="design-canvas.jsx"></script>
+<script type="text/babel" src="ui-primitives.jsx"></script>
+<script type="text/babel" src="shell.jsx"></script>
+<script type="text/babel" src="data.jsx"></script>
+<script type="text/babel" src="blocks.jsx"></script>
+<script type="text/babel" src="page-list.jsx"></script>
+<script type="text/babel" src="page-editor.jsx"></script>
+<script type="text/babel" src="page-templates.jsx"></script>
+<script type="text/babel" src="page-detail.jsx"></script>
+
+<script type="text/babel" data-presets="env,react">
+const { useState } = React;
+
+/* Tweaks ── 기본값 (에디트모드에서 수정 가능) */
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "layout": "canvas",
+  "listDensity": "comfortable",
+  "accentColor": "#3b6bf1",
+  "sidebarStyle": "grouped",
+  "editorFlow": "single",
+  "primaryBrand": "sniper"
+}/*EDITMODE-END*/;
+
+/* 데스크탑 앱 프레임 */
+function AppFrame({ url, children, width = 1320, height = 820 }) {
+  return (
+    <div style={{ width, height, overflow: 'hidden', borderRadius: 10, border: '1px solid var(--border-default)', boxShadow: 'var(--shadow-md)', background: '#fff' }}>
+      <div className="frame-topbar">
+        <div className="frame-dots">
+          <div className="frame-dot" style={{ background: '#ff5f57' }} />
+          <div className="frame-dot" style={{ background: '#febc2e' }} />
+          <div className="frame-dot" style={{ background: '#28c840' }} />
+        </div>
+        <div className="frame-url">admin.lms.kr · {url}</div>
+        <div style={{ width: 52 }} />
+      </div>
+      <div style={{ width: '100%', height: 'calc(100% - 32px)', display: 'flex' }}>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+/* 실제 앱 (풀 프레임) */
+function AdminApp({ initialPage = 'list', initialBrand, density = 'comfortable', initialReviewId }) {
+  const [page, setPage] = useState(initialPage);
+  const [brandId, setBrandId] = useState(initialBrand || 'sniper');
+  const [activeReviewId, setActiveReviewId] = useState(initialReviewId);
+  const activeReview = activeReviewId ? REVIEWS.find((r) => r.id === activeReviewId) : null;
+
+  const openReview = (id) => { setActiveReviewId(id); setPage('detail'); };
+  const openNewReview = () => { setActiveReviewId(null); setPage('editor'); };
+  const closeEditor = () => { setActiveReviewId(null); setPage('list'); };
+
+  /* 에디터 페이지에서는 "콘텐츠 관리" 메뉴바 숨김 */
+  const hideContentNav = page === 'editor';
+
+  /* 네비게이션에서 사용하는 현재 페이지 매핑 */
+  const navCurrentPage = page === 'detail' ? 'list' : page;
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', width: '100%' }}>
+      {/* 글로벌 상단 헤더 */}
+      <TopHeader brandId={brandId} onBrandChange={setBrandId} />
+
+      {/* 본문 — 사이드바 + 메인 */}
+      <div style={{ flex: 1, display: 'flex', overflow: 'hidden', minHeight: 0 }}>
+        <Sidebar
+          currentPage={navCurrentPage}
+          onNav={(k) => { setActiveReviewId(null); setPage(k); }}
+          hideContentNav={hideContentNav}
+        />
+        <main style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', background: 'var(--bg-surface)' }}>
+          {page === 'list' && <ReviewListPage brandId={brandId} density={density} onRowClick={openReview} onNewReview={openNewReview} />}
+          {page === 'editor' && <EditorPage brandId={brandId} onClose={closeEditor} />}
+          {page === 'templates' && <TemplatesPage brandId={brandId} />}
+          {page === 'detail' && <DetailPage brandId={brandId} review={activeReview} />}
+          {!['list', 'editor', 'templates', 'detail'].includes(page) && (
+            <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-tertiary)', fontSize: 14 }}>
+              이 화면은 이번 작업 범위 밖입니다 — 좌측에서 [수강 후기 / 템플릿 관리] 를 선택하세요
+            </div>
+          )}
+        </main>
+      </div>
+    </div>
+  );
+}
+
+/* 캔버스 모드 — 여러 아트보드 비교 */
+function CanvasLayout() {
+  return (
+    <DesignCanvas>
+      <DCSection id="main" title="후기 관리 시스템"
+        subtitle="A. 리스트 → A-detail. 상세 → B. 등록/수정 → C. 템플릿 관리. 화살표(←/→)로 이동, 아트보드 확장 버튼으로 풀사이즈 보기.">
+        <DCArtboard id="list" label="A · 후기 리스트" width={1320} height={820}>
+          <AppFrame url="/reviews">
+            <AdminApp initialPage="list" initialBrand="sniper" density="comfortable" />
+          </AppFrame>
+        </DCArtboard>
+        <DCArtboard id="detail" label="A-detail · 후기 상세 (클릭 시)" width={1320} height={820}>
+          <AppFrame url="/reviews/1">
+            <AdminApp initialPage="detail" initialBrand="sniper" initialReviewId={1} />
+          </AppFrame>
+        </DCArtboard>
+        <DCArtboard id="editor" label="B · 후기 등록/수정" width={1320} height={820}>
+          <AppFrame url="/reviews/edit/1">
+            <AdminApp initialPage="editor" initialBrand="sniper" />
+          </AppFrame>
+        </DCArtboard>
+        <DCArtboard id="templates" label="C · 템플릿 관리" width={1320} height={820}>
+          <AppFrame url="/templates">
+            <AdminApp initialPage="templates" initialBrand="sniper" />
+          </AppFrame>
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="brands" title="브랜드별 자동 분기"
+        subtitle="상단 글로벌 스위처로 브랜드 전환. 동일 페이지가 브랜드별 옵션(리뷰 타입, CTA 기본값 등)에 맞게 자동 분기됩니다.">
+        <DCArtboard id="insideout-list" label="인사이드아웃 · 리스트" width={1320} height={820}>
+          <AppFrame url="/reviews">
+            <AdminApp initialPage="list" initialBrand="insideout" />
+          </AppFrame>
+        </DCArtboard>
+        <DCArtboard id="insideout-editor" label="인사이드아웃 · 인턴로그 등록" width={1320} height={820}>
+          <AppFrame url="/reviews/new">
+            <AdminApp initialPage="editor" initialBrand="insideout" />
+          </AppFrame>
+        </DCArtboard>
+        <DCArtboard id="hancom-templates" label="한컴 · 템플릿" width={1320} height={820}>
+          <AppFrame url="/templates">
+            <AdminApp initialPage="templates" initialBrand="hancom" />
+          </AppFrame>
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="variants" title="밀도 변형 · 리스트 페이지"
+        subtitle="같은 리스트의 compact / comfortable / spacious 3단계. 운영자 선호에 맞춰 글로벌 설정으로 기본값 지정.">
+        <DCArtboard id="compact" label="Compact · 40px 행" width={1320} height={820}>
+          <AppFrame url="/reviews?d=compact">
+            <AdminApp initialPage="list" initialBrand="sniper" density="compact" />
+          </AppFrame>
+        </DCArtboard>
+        <DCArtboard id="comfortable" label="Comfortable · 56px 행 (기본)" width={1320} height={820}>
+          <AppFrame url="/reviews">
+            <AdminApp initialPage="list" initialBrand="sniper" density="comfortable" />
+          </AppFrame>
+        </DCArtboard>
+        <DCArtboard id="spacious" label="Spacious · 76px 행" width={1320} height={820}>
+          <AppFrame url="/reviews?d=spacious">
+            <AdminApp initialPage="list" initialBrand="sniper" density="spacious" />
+          </AppFrame>
+        </DCArtboard>
+      </DCSection>
+    </DesignCanvas>
+  );
+}
+
+/* 풀 프레임 모드 */
+function FullLayout() {
+  const [density, setDensity] = useState(TWEAK_DEFAULTS.listDensity);
+  return (
+    <div style={{ width: '100vw', height: '100vh', display: 'flex' }}>
+      <AdminApp initialPage="list" initialBrand={TWEAK_DEFAULTS.primaryBrand} density={density} />
+    </div>
+  );
+}
+
+function App() {
+  const params = new URLSearchParams(location.search);
+  const layout = params.get('layout') || TWEAK_DEFAULTS.layout;
+  return layout === 'full' ? <FullLayout /> : <CanvasLayout />;
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+
+/* Tweaks 핸들러 */
+window.addEventListener('message', (e) => {
+  if (e.data?.type === '__activate_edit_mode') {
+    /* 간단 토글 — URL 파라미터로 레이아웃 전환 */
+    const p = new URLSearchParams(location.search);
+    p.set('layout', p.get('layout') === 'full' ? 'canvas' : 'full');
+    location.search = p.toString();
+  }
+});
+window.parent.postMessage({ type: '__edit_mode_available' }, '*');
+</script>
+</body>
+</html>

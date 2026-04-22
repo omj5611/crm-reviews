@@ -1,0 +1,131 @@
+/* 통합관리솔루션 디자인 시스템 토큰
+   Linear/Notion 스타일 SaaS 어드민 — 뉴트럴 그레이 + 블루 포인트 */
+
+:root {
+  /* 그레이 스케일 */
+  --gray-0: #ffffff;
+  --gray-25: #fcfcfd;
+  --gray-50: #f7f8fa;
+  --gray-75: #f3f4f6;
+  --gray-100: #eceef2;
+  --gray-150: #e4e7ec;
+  --gray-200: #d0d5dd;
+  --gray-300: #b4bac4;
+  --gray-400: #8e96a4;
+  --gray-500: #6c7480;
+  --gray-600: #4e5560;
+  --gray-700: #363b44;
+  --gray-800: #232730;
+  --gray-900: #13151b;
+
+  /* 블루 포인트 */
+  --blue-50: #eef4ff;
+  --blue-100: #dbe7ff;
+  --blue-200: #b9d0ff;
+  --blue-300: #8ab0ff;
+  --blue-400: #5b89fb;
+  --blue-500: #3b6bf1;
+  --blue-600: #2b56d6;
+  --blue-700: #2344ad;
+  --blue-800: #1d3887;
+
+  /* 상태 컬러 */
+  --green-50: #ecfdf3;
+  --green-500: #12b76a;
+  --green-600: #039855;
+  --green-700: #027a48;
+
+  --amber-50: #fffaeb;
+  --amber-500: #f79009;
+  --amber-600: #dc6803;
+  --amber-700: #b54708;
+
+  --red-50: #fef3f2;
+  --red-500: #f04438;
+  --red-600: #d92d20;
+  --red-700: #b42318;
+
+  --purple-50: #f4f3ff;
+  --purple-500: #7a5af8;
+  --purple-600: #6938ef;
+
+  /* 브랜드 컬러 (실제 브랜드와 매칭) */
+  --brand-sniper: #0a6cff;     /* 스나이퍼팩토리 */
+  --brand-insideout: #ff5a36;  /* 인사이드아웃 */
+  --brand-hancom: #1a56db;     /* 한컴 AI 아카데미 */
+
+  /* 타이포그래피 */
+  --font-sans: 'Pretendard', 'Pretendard Variable', -apple-system, BlinkMacSystemFont, 'SF Pro KR', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+  --font-mono: 'JetBrains Mono', 'SF Mono', Monaco, 'Cascadia Code', monospace;
+
+  /* 간격 */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* 반경 */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --radius-2xl: 16px;
+
+  /* 그림자 */
+  --shadow-xs: 0 1px 2px rgba(16, 24, 40, 0.05);
+  --shadow-sm: 0 1px 3px rgba(16, 24, 40, 0.08), 0 1px 2px rgba(16, 24, 40, 0.04);
+  --shadow-md: 0 4px 8px -2px rgba(16, 24, 40, 0.08), 0 2px 4px -2px rgba(16, 24, 40, 0.04);
+  --shadow-lg: 0 12px 16px -4px rgba(16, 24, 40, 0.08), 0 4px 6px -2px rgba(16, 24, 40, 0.03);
+  --shadow-focus: 0 0 0 3px rgba(59, 107, 241, 0.16);
+
+  /* 의미론적 컬러 */
+  --bg-canvas: var(--gray-50);
+  --bg-surface: var(--gray-0);
+  --bg-sunken: var(--gray-75);
+  --bg-hover: var(--gray-75);
+  --bg-active: var(--gray-100);
+
+  --border-subtle: var(--gray-100);
+  --border-default: var(--gray-150);
+  --border-strong: var(--gray-200);
+
+  --text-primary: var(--gray-900);
+  --text-secondary: var(--gray-600);
+  --text-tertiary: var(--gray-500);
+  --text-placeholder: var(--gray-400);
+  --text-disabled: var(--gray-300);
+
+  --accent: var(--blue-500);
+  --accent-hover: var(--blue-600);
+  --accent-bg: var(--blue-50);
+}
+
+/* 글로벌 리셋 */
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: var(--font-sans);
+  color: var(--text-primary);
+  background: var(--bg-canvas);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: 'cv11', 'ss01', 'ss03';
+}
+button { font-family: inherit; }
+input, textarea, select { font-family: inherit; font-size: inherit; color: inherit; }
+button, input, textarea, select { outline: none; }
+img { max-width: 100%; display: block; }
+
+/* 스크롤바 */
+.cc-scroll::-webkit-scrollbar { width: 10px; height: 10px; }
+.cc-scroll::-webkit-scrollbar-track { background: transparent; }
+.cc-scroll::-webkit-scrollbar-thumb { background: var(--gray-200); border-radius: 5px; border: 2px solid transparent; background-clip: padding-box; }
+.cc-scroll::-webkit-scrollbar-thumb:hover { background: var(--gray-300); border: 2px solid transparent; background-clip: padding-box; }
